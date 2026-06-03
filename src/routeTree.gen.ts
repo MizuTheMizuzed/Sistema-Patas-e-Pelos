@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PainelIndexRouteImport } from './routes/painel.index'
+import { Route as PainelCadastroRouteImport } from './routes/painel.cadastro'
 
 const PainelRoute = PainelRouteImport.update({
   id: '/painel',
@@ -28,28 +29,36 @@ const PainelIndexRoute = PainelIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PainelRoute,
 } as any)
+const PainelCadastroRoute = PainelCadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
+  getParentRoute: () => PainelRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/painel': typeof PainelRouteWithChildren
+  '/painel/cadastro': typeof PainelCadastroRoute
   '/painel/': typeof PainelIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/painel/cadastro': typeof PainelCadastroRoute
   '/painel': typeof PainelIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/painel': typeof PainelRouteWithChildren
+  '/painel/cadastro': typeof PainelCadastroRoute
   '/painel/': typeof PainelIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/painel' | '/painel/'
+  fullPaths: '/' | '/painel' | '/painel/cadastro' | '/painel/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/painel'
-  id: '__root__' | '/' | '/painel' | '/painel/'
+  to: '/' | '/painel/cadastro' | '/painel'
+  id: '__root__' | '/' | '/painel' | '/painel/cadastro' | '/painel/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -80,14 +89,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PainelIndexRouteImport
       parentRoute: typeof PainelRoute
     }
+    '/painel/cadastro': {
+      id: '/painel/cadastro'
+      path: '/cadastro'
+      fullPath: '/painel/cadastro'
+      preLoaderRoute: typeof PainelCadastroRouteImport
+      parentRoute: typeof PainelRoute
+    }
   }
 }
 
 interface PainelRouteChildren {
+  PainelCadastroRoute: typeof PainelCadastroRoute
   PainelIndexRoute: typeof PainelIndexRoute
 }
 
 const PainelRouteChildren: PainelRouteChildren = {
+  PainelCadastroRoute: PainelCadastroRoute,
   PainelIndexRoute: PainelIndexRoute,
 }
 
