@@ -9,12 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as PainelRouteImport } from './routes/painel'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PainelIndexRouteImport } from './routes/painel.index'
+import { Route as PainelCadastroRouteImport } from './routes/painel.cadastro'
 
-const CadastroRoute = CadastroRouteImport.update({
-  id: '/cadastro',
-  path: '/cadastro',
+const PainelRoute = PainelRouteImport.update({
+  id: '/painel',
+  path: '/painel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,40 +24,55 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PainelIndexRoute = PainelIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PainelRoute,
+} as any)
+const PainelCadastroRoute = PainelCadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
+  getParentRoute: () => PainelRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/cadastro': typeof CadastroRoute
+  '/painel': typeof PainelRouteWithChildren
+  '/painel/cadastro': typeof PainelCadastroRoute
+  '/painel/': typeof PainelIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/cadastro': typeof CadastroRoute
+  '/painel/cadastro': typeof PainelCadastroRoute
+  '/painel': typeof PainelIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/cadastro': typeof CadastroRoute
+  '/painel': typeof PainelRouteWithChildren
+  '/painel/cadastro': typeof PainelCadastroRoute
+  '/painel/': typeof PainelIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cadastro'
+  fullPaths: '/' | '/painel' | '/painel/cadastro' | '/painel/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cadastro'
-  id: '__root__' | '/' | '/cadastro'
+  to: '/' | '/painel/cadastro' | '/painel'
+  id: '__root__' | '/' | '/painel' | '/painel/cadastro' | '/painel/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CadastroRoute: typeof CadastroRoute
+  PainelRoute: typeof PainelRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/cadastro': {
-      id: '/cadastro'
-      path: '/cadastro'
-      fullPath: '/cadastro'
-      preLoaderRoute: typeof CadastroRouteImport
+    '/painel': {
+      id: '/painel'
+      path: '/painel'
+      fullPath: '/painel'
+      preLoaderRoute: typeof PainelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -65,12 +82,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/painel/': {
+      id: '/painel/'
+      path: '/'
+      fullPath: '/painel/'
+      preLoaderRoute: typeof PainelIndexRouteImport
+      parentRoute: typeof PainelRoute
+    }
+    '/painel/cadastro': {
+      id: '/painel/cadastro'
+      path: '/cadastro'
+      fullPath: '/painel/cadastro'
+      preLoaderRoute: typeof PainelCadastroRouteImport
+      parentRoute: typeof PainelRoute
+    }
   }
 }
 
+interface PainelRouteChildren {
+  PainelCadastroRoute: typeof PainelCadastroRoute
+  PainelIndexRoute: typeof PainelIndexRoute
+}
+
+const PainelRouteChildren: PainelRouteChildren = {
+  PainelCadastroRoute: PainelCadastroRoute,
+  PainelIndexRoute: PainelIndexRoute,
+}
+
+const PainelRouteWithChildren =
+  PainelRoute._addFileChildren(PainelRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CadastroRoute: CadastroRoute,
+  PainelRoute: PainelRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

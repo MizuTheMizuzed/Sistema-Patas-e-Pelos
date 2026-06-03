@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 export const Route = createFileRoute("/")({
@@ -15,6 +15,7 @@ export const Route = createFileRoute("/")({
 });
 
 function LoginPage() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
@@ -26,7 +27,7 @@ function LoginPage() {
       return;
     }
     setErro("");
-    alert("Login realizado com sucesso! (demonstração)");
+    navigate({ to: "/painel" });
   }
 
   return (
@@ -72,13 +73,6 @@ function LoginPage() {
 
           <div className="text-center text-sm text-gray-600 pt-2">
             <a href="#" className="text-[#2c5f5d] hover:underline">Esqueci minha senha</a>
-          </div>
-
-          <div className="border-t border-gray-200 pt-4 text-center text-sm text-gray-700">
-            Novo cliente?{" "}
-            <Link to="/cadastro" className="text-[#2c5f5d] font-medium hover:underline">
-              Cadastre-se aqui
-            </Link>
           </div>
         </form>
       </div>
