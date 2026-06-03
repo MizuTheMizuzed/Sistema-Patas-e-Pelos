@@ -9,12 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as PainelRouteImport } from './routes/painel'
 import { Route as IndexRouteImport } from './routes/index'
 
-const CadastroRoute = CadastroRouteImport.update({
-  id: '/cadastro',
-  path: '/cadastro',
+const PainelRoute = PainelRouteImport.update({
+  id: '/painel',
+  path: '/painel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,37 +25,37 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/cadastro': typeof CadastroRoute
+  '/painel': typeof PainelRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/cadastro': typeof CadastroRoute
+  '/painel': typeof PainelRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/cadastro': typeof CadastroRoute
+  '/painel': typeof PainelRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cadastro'
+  fullPaths: '/' | '/painel'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cadastro'
-  id: '__root__' | '/' | '/cadastro'
+  to: '/' | '/painel'
+  id: '__root__' | '/' | '/painel'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CadastroRoute: typeof CadastroRoute
+  PainelRoute: typeof PainelRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/cadastro': {
-      id: '/cadastro'
-      path: '/cadastro'
-      fullPath: '/cadastro'
-      preLoaderRoute: typeof CadastroRouteImport
+    '/painel': {
+      id: '/painel'
+      path: '/painel'
+      fullPath: '/painel'
+      preLoaderRoute: typeof PainelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,8 +70,18 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CadastroRoute: CadastroRoute,
+  PainelRoute: PainelRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
