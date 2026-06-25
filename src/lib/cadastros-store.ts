@@ -51,3 +51,16 @@ export function salvarCliente(novo: Omit<Cliente, "id" | "criadoEm" | "animais">
   }
   window.localStorage.setItem(KEY, JSON.stringify(atuais));
 }
+
+export function excluirCliente(id: string) {
+  const atuais = listarClientes().filter((c) => c.id !== id);
+  window.localStorage.setItem(KEY, JSON.stringify(atuais));
+}
+
+export function excluirAnimal(clienteId: string, index: number) {
+  const atuais = listarClientes();
+  const cliente = atuais.find((c) => c.id === clienteId);
+  if (!cliente) return;
+  cliente.animais.splice(index, 1);
+  window.localStorage.setItem(KEY, JSON.stringify(atuais));
+}
