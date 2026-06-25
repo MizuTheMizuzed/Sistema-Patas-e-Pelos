@@ -35,7 +35,6 @@ function CadastroPage() {
       nome, cpf, telefone, email, endereco,
       animal: { nome: nomeAnimal, especie, raca, idade, sexo, observacoes },
     });
-    setMensagem("Cadastro realizado com sucesso!");
     handleLimpar();
     setMensagem("Cadastro realizado com sucesso!");
   }
