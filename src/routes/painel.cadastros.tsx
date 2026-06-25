@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { listarClientes, type Cliente } from "@/lib/cadastros-store";
+import { listarClientes, excluirCliente, excluirAnimal, type Cliente } from "@/lib/cadastros-store";
 
 export const Route = createFileRoute("/painel/cadastros")({
   head: () => ({ meta: [{ title: "Cadastros — Patas e Pelos" }] }),
@@ -31,6 +31,23 @@ function CadastrosPage() {
   });
 
   const selecionado = filtrados.find((c) => c.id === selecionadoId) ?? filtrados[0] ?? null;
+
+  function handleExcluirCliente(c: Cliente) {
+    const ok = window.confirm(
+      `Tem certeza que deseja excluir o cliente "${c.nome}" e seus ${c.animais.length} animal(is) afiliado(s)?\n\nEsta ação não pode ser desfeita.`,
+    );
+    if (!ok) return;
+    excluirCliente(c.id);
+    setClientes(listarClientes());
+    if (selecionadoId === c.id) setSelecionadoId(null);
+  }
+
+  function handleExcluirAnimal(clienteId: string, index: number, nomeAnimal: string) {
+    const ok = window.confirm(`Remover o animal "${nomeAnimal}" deste cliente?`);
+    if (!ok) return;
+    excluirAnimal(clienteId, index);
+    setClientes(listarClientes());
+  }
 
   return (
     <div className="p-6">
@@ -73,20 +90,31 @@ function CadastrosPage() {
                 const ativo = selecionado?.id === c.id;
                 return (
                   <li key={c.id}>
-                    <button
-                      onClick={() => setSelecionadoId(c.id)}
-                      className={`w-full text-left px-4 py-3 hover:bg-[#eaf4f4] transition-colors ${
+                    <div
+                      className={`flex items-stretch hover:bg-[#eaf4f4] transition-colors ${
                         ativo ? "bg-[#eaf4f4] border-l-4 border-[#2c5f5d]" : ""
                       }`}
                     >
-                      <div className="font-medium text-gray-800">{c.nome}</div>
-                      <div className="text-xs text-gray-600">
-                        CPF: {c.cpf} • {c.telefone}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        🐾 {c.animais.length} animal{c.animais.length !== 1 ? "is" : ""}
-                      </div>
-                    </button>
+                      <button
+                        onClick={() => setSelecionadoId(c.id)}
+                        className="flex-1 text-left px-4 py-3"
+                      >
+                        <div className="font-medium text-gray-800">{c.nome}</div>
+                        <div className="text-xs text-gray-600">
+                          CPF: {c.cpf} • {c.telefone}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          🐾 {c.animais.length} animal{c.animais.length !== 1 ? "is" : ""}
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => handleExcluirCliente(c)}
+                        title="Excluir cliente"
+                        className="px-3 text-red-600 hover:bg-red-50 text-sm"
+                      >
+                        🗑
+                      </button>
+                    </div>
                   </li>
                 );
               })}
@@ -104,7 +132,15 @@ function CadastrosPage() {
             {selecionado ? (
               <div className="p-4 space-y-4">
                 <div className="bg-[#eaf4f4] rounded p-3 text-sm">
-                  <div className="font-semibold text-[#2c5f5d]">{selecionado.nome}</div>
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="font-semibold text-[#2c5f5d]">{selecionado.nome}</div>
+                    <button
+                      onClick={() => handleExcluirCliente(selecionado)}
+                      className="text-xs px-2 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50"
+                    >
+                      🗑 Excluir cliente
+                    </button>
+                  </div>
                   <div className="text-gray-700 text-xs mt-1 space-y-0.5">
                     <div>CPF: {selecionado.cpf}</div>
                     <div>Telefone: {selecionado.telefone}</div>
@@ -125,9 +161,18 @@ function CadastrosPage() {
                       >
                         <div className="flex justify-between items-start">
                           <div className="font-medium text-gray-800">🐾 {a.nome}</div>
-                          <span className="text-xs bg-[#2c5f5d] text-white px-2 py-0.5 rounded">
-                            {especieLabel[a.especie] ?? a.especie}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs bg-[#2c5f5d] text-white px-2 py-0.5 rounded">
+                              {especieLabel[a.especie] ?? a.especie}
+                            </span>
+                            <button
+                              onClick={() => handleExcluirAnimal(selecionado.id, i, a.nome)}
+                              title="Remover animal"
+                              className="text-red-600 hover:bg-red-50 text-xs px-1 rounded"
+                            >
+                              🗑
+                            </button>
+                          </div>
                         </div>
                         <div className="text-xs text-gray-600 mt-1 grid grid-cols-2 gap-x-2">
                           {a.raca && <div>Raça: {a.raca}</div>}
