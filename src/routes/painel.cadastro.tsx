@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { salvarCliente } from "@/lib/cadastros-store";
 
 export const Route = createFileRoute("/painel/cadastro")({
   head: () => ({
@@ -30,7 +31,12 @@ function CadastroPage() {
       setMensagem("Por favor, preencha os campos obrigatórios (*).");
       return;
     }
-    setMensagem("Cadastro realizado com sucesso! (demonstração)");
+    salvarCliente({
+      nome, cpf, telefone, email, endereco,
+      animal: { nome: nomeAnimal, especie, raca, idade, sexo, observacoes },
+    });
+    handleLimpar();
+    setMensagem("Cadastro realizado com sucesso!");
   }
 
   function handleLimpar() {

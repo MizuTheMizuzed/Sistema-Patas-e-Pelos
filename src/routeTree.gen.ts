@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PainelIndexRouteImport } from './routes/painel.index'
+import { Route as PainelCadastrosRouteImport } from './routes/painel.cadastros'
 import { Route as PainelCadastroRouteImport } from './routes/painel.cadastro'
 import { Route as PainelAgendamentosRouteImport } from './routes/painel.agendamentos'
 
@@ -30,6 +31,11 @@ const PainelIndexRoute = PainelIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PainelRoute,
 } as any)
+const PainelCadastrosRoute = PainelCadastrosRouteImport.update({
+  id: '/cadastros',
+  path: '/cadastros',
+  getParentRoute: () => PainelRoute,
+} as any)
 const PainelCadastroRoute = PainelCadastroRouteImport.update({
   id: '/cadastro',
   path: '/cadastro',
@@ -46,12 +52,14 @@ export interface FileRoutesByFullPath {
   '/painel': typeof PainelRouteWithChildren
   '/painel/agendamentos': typeof PainelAgendamentosRoute
   '/painel/cadastro': typeof PainelCadastroRoute
+  '/painel/cadastros': typeof PainelCadastrosRoute
   '/painel/': typeof PainelIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/painel/agendamentos': typeof PainelAgendamentosRoute
   '/painel/cadastro': typeof PainelCadastroRoute
+  '/painel/cadastros': typeof PainelCadastrosRoute
   '/painel': typeof PainelIndexRoute
 }
 export interface FileRoutesById {
@@ -60,6 +68,7 @@ export interface FileRoutesById {
   '/painel': typeof PainelRouteWithChildren
   '/painel/agendamentos': typeof PainelAgendamentosRoute
   '/painel/cadastro': typeof PainelCadastroRoute
+  '/painel/cadastros': typeof PainelCadastrosRoute
   '/painel/': typeof PainelIndexRoute
 }
 export interface FileRouteTypes {
@@ -69,15 +78,22 @@ export interface FileRouteTypes {
     | '/painel'
     | '/painel/agendamentos'
     | '/painel/cadastro'
+    | '/painel/cadastros'
     | '/painel/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/painel/agendamentos' | '/painel/cadastro' | '/painel'
+  to:
+    | '/'
+    | '/painel/agendamentos'
+    | '/painel/cadastro'
+    | '/painel/cadastros'
+    | '/painel'
   id:
     | '__root__'
     | '/'
     | '/painel'
     | '/painel/agendamentos'
     | '/painel/cadastro'
+    | '/painel/cadastros'
     | '/painel/'
   fileRoutesById: FileRoutesById
 }
@@ -109,6 +125,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PainelIndexRouteImport
       parentRoute: typeof PainelRoute
     }
+    '/painel/cadastros': {
+      id: '/painel/cadastros'
+      path: '/cadastros'
+      fullPath: '/painel/cadastros'
+      preLoaderRoute: typeof PainelCadastrosRouteImport
+      parentRoute: typeof PainelRoute
+    }
     '/painel/cadastro': {
       id: '/painel/cadastro'
       path: '/cadastro'
@@ -129,12 +152,14 @@ declare module '@tanstack/react-router' {
 interface PainelRouteChildren {
   PainelAgendamentosRoute: typeof PainelAgendamentosRoute
   PainelCadastroRoute: typeof PainelCadastroRoute
+  PainelCadastrosRoute: typeof PainelCadastrosRoute
   PainelIndexRoute: typeof PainelIndexRoute
 }
 
 const PainelRouteChildren: PainelRouteChildren = {
   PainelAgendamentosRoute: PainelAgendamentosRoute,
   PainelCadastroRoute: PainelCadastroRoute,
+  PainelCadastrosRoute: PainelCadastrosRoute,
   PainelIndexRoute: PainelIndexRoute,
 }
 
