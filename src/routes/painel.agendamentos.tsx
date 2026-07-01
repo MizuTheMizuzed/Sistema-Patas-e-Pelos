@@ -8,6 +8,8 @@ export const Route = createFileRoute("/painel/agendamentos")({
   component: AgendamentosPage,
 });
 
+type Urgencia = "Nenhuma" | "Baixa" | "Média" | "Alta" | "Crítica";
+
 type Agendamento = {
   id: number;
   cliente: string;
@@ -15,13 +17,16 @@ type Agendamento = {
   servico: string;
   data: string;
   hora: string;
+  urgencia: Urgencia;
   status: "Agendado" | "Concluído" | "Cancelado";
 };
 
+const NIVEIS_URGENCIA: Urgencia[] = ["Nenhuma", "Baixa", "Média", "Alta", "Crítica"];
+
 const exemplos: Agendamento[] = [
-  { id: 1, cliente: "Maria Silva", animal: "Rex", servico: "Consulta", data: "2026-06-26", hora: "09:00", status: "Agendado" },
-  { id: 2, cliente: "João Souza", animal: "Mia", servico: "Vacinação", data: "2026-06-26", hora: "10:30", status: "Agendado" },
-  { id: 3, cliente: "Ana Costa", animal: "Toby", servico: "Banho e Tosa", data: "2026-06-27", hora: "14:00", status: "Concluído" },
+  { id: 1, cliente: "Maria Silva", animal: "Rex", servico: "Consulta", data: "2026-06-26", hora: "09:00", urgencia: "Baixa", status: "Agendado" },
+  { id: 2, cliente: "João Souza", animal: "Mia", servico: "Vacinação", data: "2026-06-26", hora: "10:30", urgencia: "Nenhuma", status: "Agendado" },
+  { id: 3, cliente: "Ana Costa", animal: "Toby", servico: "Banho e Tosa", data: "2026-06-27", hora: "14:00", urgencia: "Nenhuma", status: "Concluído" },
 ];
 
 function AgendamentosPage() {
@@ -34,6 +39,7 @@ function AgendamentosPage() {
   const [servico, setServico] = useState("");
   const [data, setData] = useState("");
   const [hora, setHora] = useState("");
+  const [urgencia, setUrgencia] = useState<Urgencia>("Nenhuma");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,11 +49,11 @@ function AgendamentosPage() {
     }
     const novo: Agendamento = {
       id: Date.now(),
-      cliente, animal, servico, data, hora,
+      cliente, animal, servico, data, hora, urgencia,
       status: "Agendado",
     };
     setLista([novo, ...lista]);
-    setCliente(""); setAnimal(""); setServico(""); setData(""); setHora("");
+    setCliente(""); setAnimal(""); setServico(""); setData(""); setHora(""); setUrgencia("Nenhuma");
     setMensagem("Agendamento criado com sucesso! (demonstração)");
     setMostrarForm(false);
   }
@@ -60,6 +66,16 @@ function AgendamentosPage() {
     if (s === "Agendado") return "bg-blue-100 text-blue-800";
     if (s === "Concluído") return "bg-green-100 text-green-800";
     return "bg-red-100 text-red-700";
+  }
+
+  function corUrgencia(u: Urgencia) {
+    switch (u) {
+      case "Crítica": return "bg-red-100 text-red-700";
+      case "Alta": return "bg-orange-100 text-orange-700";
+      case "Média": return "bg-yellow-100 text-yellow-800";
+      case "Baixa": return "bg-blue-100 text-blue-800";
+      default: return "bg-gray-100 text-gray-700";
+    }
   }
 
   return (
@@ -122,6 +138,15 @@ function AgendamentosPage() {
               <input type="time" value={hora} onChange={(e) => setHora(e.target.value)}
                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]" />
             </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Urgência</label>
+              <select value={urgencia} onChange={(e) => setUrgencia(e.target.value as Urgencia)}
+                className="w-full border border-gray-300 rounded px-3 py-2 bg-white focus:outline-none focus:border-[#2c5f5d]">
+                {NIVEIS_URGENCIA.map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {mensagem && (
@@ -147,6 +172,7 @@ function AgendamentosPage() {
               <th className="text-left px-4 py-2">Cliente</th>
               <th className="text-left px-4 py-2">Animal</th>
               <th className="text-left px-4 py-2">Serviço</th>
+              <th className="text-left px-4 py-2">Urgência</th>
               <th className="text-left px-4 py-2">Status</th>
               <th className="text-right px-4 py-2">Ações</th>
             </tr>
@@ -154,7 +180,7 @@ function AgendamentosPage() {
           <tbody>
             {lista.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center text-gray-500 py-6">
+                <td colSpan={8} className="text-center text-gray-500 py-6">
                   Nenhum agendamento cadastrado.
                 </td>
               </tr>
@@ -166,6 +192,11 @@ function AgendamentosPage() {
                 <td className="px-4 py-2">{a.cliente}</td>
                 <td className="px-4 py-2">{a.animal}</td>
                 <td className="px-4 py-2">{a.servico}</td>
+                <td className="px-4 py-2">
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${corUrgencia(a.urgencia)}`}>
+                    {a.urgencia}
+                  </span>
+                </td>
                 <td className="px-4 py-2">
                   <span className={`px-2 py-1 rounded text-xs font-medium ${corStatus(a.status)}`}>
                     {a.status}
