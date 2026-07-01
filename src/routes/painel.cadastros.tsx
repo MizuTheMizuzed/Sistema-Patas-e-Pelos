@@ -1,6 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { listarClientes, excluirCliente, excluirAnimal, type Cliente } from "@/lib/cadastros-store";
+import {
+  listarClientes,
+  excluirCliente,
+  excluirAnimal,
+  atualizarCliente,
+  atualizarAnimal,
+  type Cliente,
+  type Animal,
+} from "@/lib/cadastros-store";
 
 export const Route = createFileRoute("/painel/cadastros")({
   head: () => ({ meta: [{ title: "Cadastros — Patas e Pelos" }] }),
@@ -15,6 +23,10 @@ function CadastrosPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [busca, setBusca] = useState("");
   const [selecionadoId, setSelecionadoId] = useState<string | null>(null);
+  const [editandoCliente, setEditandoCliente] = useState<Cliente | null>(null);
+  const [editandoAnimal, setEditandoAnimal] = useState<
+    { clienteId: string; index: number; animal: Animal } | null
+  >(null);
 
   useEffect(() => {
     setClientes(listarClientes());
@@ -47,6 +59,26 @@ function CadastrosPage() {
     if (!ok) return;
     excluirAnimal(clienteId, index);
     setClientes(listarClientes());
+  }
+
+  function salvarEdicaoCliente() {
+    if (!editandoCliente) return;
+    atualizarCliente(editandoCliente.id, {
+      nome: editandoCliente.nome,
+      cpf: editandoCliente.cpf,
+      telefone: editandoCliente.telefone,
+      email: editandoCliente.email,
+      endereco: editandoCliente.endereco,
+    });
+    setClientes(listarClientes());
+    setEditandoCliente(null);
+  }
+
+  function salvarEdicaoAnimal() {
+    if (!editandoAnimal) return;
+    atualizarAnimal(editandoAnimal.clienteId, editandoAnimal.index, editandoAnimal.animal);
+    setClientes(listarClientes());
+    setEditandoAnimal(null);
   }
 
   return (
@@ -134,12 +166,20 @@ function CadastrosPage() {
                 <div className="bg-[#eaf4f4] rounded p-3 text-sm">
                   <div className="flex justify-between items-start gap-2">
                     <div className="font-semibold text-[#2c5f5d]">{selecionado.nome}</div>
-                    <button
-                      onClick={() => handleExcluirCliente(selecionado)}
-                      className="text-xs px-2 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50"
-                    >
-                      🗑 Excluir cliente
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setEditandoCliente({ ...selecionado })}
+                        className="text-xs px-2 py-1 border border-[#2c5f5d] text-[#2c5f5d] rounded hover:bg-[#eaf4f4]"
+                      >
+                        ✏ Editar
+                      </button>
+                      <button
+                        onClick={() => handleExcluirCliente(selecionado)}
+                        className="text-xs px-2 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50"
+                      >
+                        🗑 Excluir
+                      </button>
+                    </div>
                   </div>
                   <div className="text-gray-700 text-xs mt-1 space-y-0.5">
                     <div>CPF: {selecionado.cpf}</div>
@@ -165,6 +205,19 @@ function CadastrosPage() {
                             <span className="text-xs bg-[#2c5f5d] text-white px-2 py-0.5 rounded">
                               {especieLabel[a.especie] ?? a.especie}
                             </span>
+                            <button
+                              onClick={() =>
+                                setEditandoAnimal({
+                                  clienteId: selecionado.id,
+                                  index: i,
+                                  animal: { ...a },
+                                })
+                              }
+                              title="Editar animal"
+                              className="text-[#2c5f5d] hover:bg-[#eaf4f4] text-xs px-1 rounded"
+                            >
+                              ✏
+                            </button>
                             <button
                               onClick={() => handleExcluirAnimal(selecionado.id, i, a.nome)}
                               title="Remover animal"
@@ -197,6 +250,171 @@ function CadastrosPage() {
               </div>
             )}
           </section>
+        </div>
+      )}
+
+      {editandoCliente && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+            <header className="bg-[#2c5f5d] text-white px-4 py-2 rounded-t-lg font-semibold">
+              Editar cliente
+            </header>
+            <div className="p-4 space-y-3 text-sm">
+              {[
+                { key: "nome", label: "Nome" },
+                { key: "cpf", label: "CPF" },
+                { key: "telefone", label: "Telefone" },
+                { key: "email", label: "Email" },
+                { key: "endereco", label: "Endereço" },
+              ].map((f) => (
+                <div key={f.key}>
+                  <label className="block text-xs text-gray-600 mb-1">{f.label}</label>
+                  <input
+                    type="text"
+                    value={(editandoCliente as any)[f.key] ?? ""}
+                    onChange={(e) =>
+                      setEditandoCliente({ ...editandoCliente, [f.key]: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
+                  />
+                </div>
+              ))}
+            </div>
+            <footer className="flex justify-end gap-2 px-4 py-3 border-t border-gray-200">
+              <button
+                onClick={() => setEditandoCliente(null)}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={salvarEdicaoCliente}
+                className="px-3 py-1.5 text-sm bg-[#2c5f5d] text-white rounded hover:bg-[#234a48]"
+              >
+                Salvar
+              </button>
+            </footer>
+          </div>
+        </div>
+      )}
+
+      {editandoAnimal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+            <header className="bg-[#2c5f5d] text-white px-4 py-2 rounded-t-lg font-semibold">
+              Editar animal
+            </header>
+            <div className="p-4 space-y-3 text-sm">
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Nome</label>
+                <input
+                  type="text"
+                  value={editandoAnimal.animal.nome}
+                  onChange={(e) =>
+                    setEditandoAnimal({
+                      ...editandoAnimal,
+                      animal: { ...editandoAnimal.animal, nome: e.target.value },
+                    })
+                  }
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Espécie</label>
+                <select
+                  value={editandoAnimal.animal.especie}
+                  onChange={(e) =>
+                    setEditandoAnimal({
+                      ...editandoAnimal,
+                      animal: { ...editandoAnimal.animal, especie: e.target.value },
+                    })
+                  }
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
+                >
+                  <option value="cao">Cão</option>
+                  <option value="gato">Gato</option>
+                  <option value="ave">Ave</option>
+                  <option value="roedor">Roedor</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Raça</label>
+                  <input
+                    type="text"
+                    value={editandoAnimal.animal.raca ?? ""}
+                    onChange={(e) =>
+                      setEditandoAnimal({
+                        ...editandoAnimal,
+                        animal: { ...editandoAnimal.animal, raca: e.target.value },
+                      })
+                    }
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Idade</label>
+                  <input
+                    type="text"
+                    value={editandoAnimal.animal.idade ?? ""}
+                    onChange={(e) =>
+                      setEditandoAnimal({
+                        ...editandoAnimal,
+                        animal: { ...editandoAnimal.animal, idade: e.target.value },
+                      })
+                    }
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Sexo</label>
+                <select
+                  value={editandoAnimal.animal.sexo ?? ""}
+                  onChange={(e) =>
+                    setEditandoAnimal({
+                      ...editandoAnimal,
+                      animal: { ...editandoAnimal.animal, sexo: e.target.value },
+                    })
+                  }
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
+                >
+                  <option value="">—</option>
+                  <option value="macho">Macho</option>
+                  <option value="femea">Fêmea</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Observações</label>
+                <textarea
+                  value={editandoAnimal.animal.observacoes ?? ""}
+                  onChange={(e) =>
+                    setEditandoAnimal({
+                      ...editandoAnimal,
+                      animal: { ...editandoAnimal.animal, observacoes: e.target.value },
+                    })
+                  }
+                  rows={3}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
+                />
+              </div>
+            </div>
+            <footer className="flex justify-end gap-2 px-4 py-3 border-t border-gray-200">
+              <button
+                onClick={() => setEditandoAnimal(null)}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={salvarEdicaoAnimal}
+                className="px-3 py-1.5 text-sm bg-[#2c5f5d] text-white rounded hover:bg-[#234a48]"
+              >
+                Salvar
+              </button>
+            </footer>
+          </div>
         </div>
       )}
     </div>
