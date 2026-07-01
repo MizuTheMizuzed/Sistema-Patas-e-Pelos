@@ -1,6 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { listarClientes, excluirCliente, excluirAnimal, type Cliente } from "@/lib/cadastros-store";
+import {
+  listarClientes,
+  excluirCliente,
+  excluirAnimal,
+  atualizarCliente,
+  atualizarAnimal,
+  type Cliente,
+  type Animal,
+} from "@/lib/cadastros-store";
 
 export const Route = createFileRoute("/painel/cadastros")({
   head: () => ({ meta: [{ title: "Cadastros — Patas e Pelos" }] }),
@@ -15,6 +23,10 @@ function CadastrosPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [busca, setBusca] = useState("");
   const [selecionadoId, setSelecionadoId] = useState<string | null>(null);
+  const [editandoCliente, setEditandoCliente] = useState<Cliente | null>(null);
+  const [editandoAnimal, setEditandoAnimal] = useState<
+    { clienteId: string; index: number; animal: Animal } | null
+  >(null);
 
   useEffect(() => {
     setClientes(listarClientes());
@@ -47,6 +59,26 @@ function CadastrosPage() {
     if (!ok) return;
     excluirAnimal(clienteId, index);
     setClientes(listarClientes());
+  }
+
+  function salvarEdicaoCliente() {
+    if (!editandoCliente) return;
+    atualizarCliente(editandoCliente.id, {
+      nome: editandoCliente.nome,
+      cpf: editandoCliente.cpf,
+      telefone: editandoCliente.telefone,
+      email: editandoCliente.email,
+      endereco: editandoCliente.endereco,
+    });
+    setClientes(listarClientes());
+    setEditandoCliente(null);
+  }
+
+  function salvarEdicaoAnimal() {
+    if (!editandoAnimal) return;
+    atualizarAnimal(editandoAnimal.clienteId, editandoAnimal.index, editandoAnimal.animal);
+    setClientes(listarClientes());
+    setEditandoAnimal(null);
   }
 
   return (
@@ -140,6 +172,12 @@ function CadastrosPage() {
                     >
                       🗑 Excluir cliente
                     </button>
+                    <button
+                      onClick={() => setEditandoCliente({ ...selecionado })}
+                      className="text-xs px-2 py-1 border border-[#2c5f5d] text-[#2c5f5d] rounded hover:bg-[#eaf4f4]"
+                    >
+                      ✏ Editar
+                    </button>
                   </div>
                   <div className="text-gray-700 text-xs mt-1 space-y-0.5">
                     <div>CPF: {selecionado.cpf}</div>
@@ -165,6 +203,19 @@ function CadastrosPage() {
                             <span className="text-xs bg-[#2c5f5d] text-white px-2 py-0.5 rounded">
                               {especieLabel[a.especie] ?? a.especie}
                             </span>
+                            <button
+                              onClick={() =>
+                                setEditandoAnimal({
+                                  clienteId: selecionado.id,
+                                  index: i,
+                                  animal: { ...a },
+                                })
+                              }
+                              title="Editar animal"
+                              className="text-[#2c5f5d] hover:bg-[#eaf4f4] text-xs px-1 rounded"
+                            >
+                              ✏
+                            </button>
                             <button
                               onClick={() => handleExcluirAnimal(selecionado.id, i, a.nome)}
                               title="Remover animal"
