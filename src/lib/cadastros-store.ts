@@ -64,3 +64,22 @@ export function excluirAnimal(clienteId: string, index: number) {
   cliente.animais.splice(index, 1);
   window.localStorage.setItem(KEY, JSON.stringify(atuais));
 }
+
+export function atualizarCliente(
+  id: string,
+  dados: Partial<Omit<Cliente, "id" | "criadoEm" | "animais">>,
+) {
+  const atuais = listarClientes();
+  const cliente = atuais.find((c) => c.id === id);
+  if (!cliente) return;
+  Object.assign(cliente, dados);
+  window.localStorage.setItem(KEY, JSON.stringify(atuais));
+}
+
+export function atualizarAnimal(clienteId: string, index: number, dados: Animal) {
+  const atuais = listarClientes();
+  const cliente = atuais.find((c) => c.id === clienteId);
+  if (!cliente || !cliente.animais[index]) return;
+  cliente.animais[index] = dados;
+  window.localStorage.setItem(KEY, JSON.stringify(atuais));
+}
