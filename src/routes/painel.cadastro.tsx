@@ -47,7 +47,7 @@ function CadastroPage() {
 
   return (
     <div className="p-6 max-w-3xl">
-      <h1 className="text-2xl font-bold text-[#2c5f5d] mb-1">Cadastro de Cliente e Animal</h1>
+      <h1 className="text-2xl font-bold text-[#2c5f5d] mb-1">Cadastrar novo Cliente</h1>
       <p className="text-sm text-gray-600 mb-2">
         Preencha os dados do tutor e do animal para registrá-los no sistema.
       </p>

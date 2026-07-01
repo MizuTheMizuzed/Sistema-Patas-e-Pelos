@@ -6,7 +6,7 @@ export const Route = createFileRoute("/painel")({
 
 const menu = [
   { label: "Início", path: "/painel", icon: "🏠" },
-  { label: "Cadastro de Cliente/Animal", path: "/painel/cadastro", icon: "🐾" },
+  { label: "Cadastrar novo Cliente", path: "/painel/cadastro", icon: "🐾" },
   { label: "Agendamentos", path: "/painel/agendamentos", icon: "📅" },
   { label: "Cadastros", path: "/painel/cadastros", icon: "👥" },
 ];
