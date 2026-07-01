@@ -166,18 +166,20 @@ function CadastrosPage() {
                 <div className="bg-[#eaf4f4] rounded p-3 text-sm">
                   <div className="flex justify-between items-start gap-2">
                     <div className="font-semibold text-[#2c5f5d]">{selecionado.nome}</div>
-                    <button
-                      onClick={() => handleExcluirCliente(selecionado)}
-                      className="text-xs px-2 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50"
-                    >
-                      🗑 Excluir cliente
-                    </button>
-                    <button
-                      onClick={() => setEditandoCliente({ ...selecionado })}
-                      className="text-xs px-2 py-1 border border-[#2c5f5d] text-[#2c5f5d] rounded hover:bg-[#eaf4f4]"
-                    >
-                      ✏ Editar
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setEditandoCliente({ ...selecionado })}
+                        className="text-xs px-2 py-1 border border-[#2c5f5d] text-[#2c5f5d] rounded hover:bg-[#eaf4f4]"
+                      >
+                        ✏ Editar
+                      </button>
+                      <button
+                        onClick={() => handleExcluirCliente(selecionado)}
+                        className="text-xs px-2 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50"
+                      >
+                        🗑 Excluir
+                      </button>
+                    </div>
                   </div>
                   <div className="text-gray-700 text-xs mt-1 space-y-0.5">
                     <div>CPF: {selecionado.cpf}</div>
