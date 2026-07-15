@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/painel/agendamentos")({
   head: () => ({
@@ -18,6 +18,7 @@ type Agendamento = {
   data: string;
   hora: string;
   urgencia: Urgencia;
+  sintomas: string;
   status: "Agendado" | "Concluído" | "Cancelado";
 };
 
@@ -84,9 +85,9 @@ function encontrarConflito(
 }
 
 const exemplos: Agendamento[] = [
-  { id: 1, cliente: "Maria Silva", animal: "Rex", servico: "Consulta", data: "2026-06-26", hora: "09:00", urgencia: "Baixa", status: "Agendado" },
-  { id: 2, cliente: "João Souza", animal: "Mia", servico: "Vacinação", data: "2026-06-26", hora: "10:30", urgencia: "Nenhuma", status: "Agendado" },
-  { id: 3, cliente: "Ana Costa", animal: "Toby", servico: "Banho e Tosa", data: "2026-06-27", hora: "14:00", urgencia: "Nenhuma", status: "Concluído" },
+  { id: 1, cliente: "Maria Silva", animal: "Rex", servico: "Consulta", data: "2026-06-26", hora: "09:00", urgencia: "Baixa", sintomas: "Muito apático e com febre", status: "Agendado" },
+  { id: 2, cliente: "João Souza", animal: "Mia", servico: "Vacinação", data: "2026-06-26", hora: "10:30", urgencia: "Nenhuma", sintomas: "Sem sintomas aparentes", status: "Agendado" },
+  { id: 3, cliente: "Ana Costa", animal: "Toby", servico: "Banho e Tosa", data: "2026-06-27", hora: "14:00", urgencia: "Nenhuma", sintomas: "", status: "Concluído" },
 ];
 
 function AgendamentosPage() {
@@ -100,6 +101,64 @@ function AgendamentosPage() {
   const [data, setData] = useState("");
   const [hora, setHora] = useState("");
   const [urgencia, setUrgencia] = useState<Urgencia>("Nenhuma");
+  const [sintomas, setSintomas] = useState("");
+  const [termoBusca, setTermoBusca] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState<"Todos" | Agendamento["status"]>("Todos");
+  const [filtroUrgencia, setFiltroUrgencia] = useState<"Todas" | Urgencia>("Todas");
+  const [filtroData, setFiltroData] = useState("");
+
+  const agendamentosFiltrados = useMemo(() => {
+    const termo = normalizarTexto(termoBusca);
+
+    return lista.filter((agendamento) => {
+      if (filtroStatus !== "Todos" && agendamento.status !== filtroStatus) {
+        return false;
+      }
+
+      if (filtroUrgencia !== "Todas" && agendamento.urgencia !== filtroUrgencia) {
+        return false;
+      }
+
+      if (filtroData && agendamento.data !== filtroData) {
+        return false;
+      }
+
+      if (!termo) {
+        return true;
+      }
+
+      const camposParaBusca = [
+        agendamento.cliente,
+        agendamento.animal,
+        agendamento.servico,
+        agendamento.data,
+        agendamento.hora,
+        agendamento.urgencia,
+        agendamento.sintomas,
+        agendamento.status,
+        String(agendamento.id),
+      ];
+
+      return camposParaBusca.some((campo) => normalizarTexto(String(campo)).includes(termo));
+    });
+  }, [filtroData, filtroStatus, filtroUrgencia, lista, termoBusca]);
+
+  const resumo = useMemo(() => {
+    const agendados = lista.filter((agendamento) => agendamento.status === "Agendado").length;
+    const concluidos = lista.filter((agendamento) => agendamento.status === "Concluído").length;
+    const cancelados = lista.filter((agendamento) => agendamento.status === "Cancelado").length;
+    const valorTotal = lista
+      .filter((agendamento) => agendamento.status !== "Cancelado")
+      .reduce((soma, agendamento) => soma + calcularValorServico(agendamento.servico, agendamento.hora), 0);
+
+    return {
+      total: lista.length,
+      agendados,
+      concluidos,
+      cancelados,
+      valorTotal,
+    };
+  }, [lista]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -124,11 +183,11 @@ function AgendamentosPage() {
 
     const novo: Agendamento = {
       id: Date.now(),
-      cliente, animal, servico, data, hora, urgencia,
+      cliente, animal, servico, data, hora, urgencia, sintomas: sintomas.trim(),
       status: "Agendado",
     };
     setLista((atual) => [novo, ...atual]);
-    setCliente(""); setAnimal(""); setServico(""); setData(""); setHora(""); setUrgencia("Nenhuma");
+    setCliente(""); setAnimal(""); setServico(""); setData(""); setHora(""); setUrgencia("Nenhuma"); setSintomas("");
     setMensagem("Agendamento criado com sucesso! (demonstração)");
     setMostrarForm(false);
   }
@@ -228,6 +287,17 @@ function AgendamentosPage() {
                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]" />
             </div>
             <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sintomas do animal</label>
+              <textarea
+                value={sintomas}
+                onChange={(e) => setSintomas(e.target.value)}
+                rows={3}
+                placeholder="Descreva os sintomas observados pelo dono do animal, se houver."
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
+              />
+              <p className="mt-1 text-xs text-gray-500">Esse texto ajuda a equipe a entender o que o animal está sentindo no momento do atendimento.</p>
+            </div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">Urgência</label>
               <select value={urgencia} onChange={(e) => setUrgencia(e.target.value as Urgencia)}
                 className="w-full border border-gray-300 rounded px-3 py-2 bg-white focus:outline-none focus:border-[#2c5f5d]">
@@ -252,6 +322,102 @@ function AgendamentosPage() {
         </form>
       )}
 
+      <div className="mb-6 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+          <p className="text-sm text-gray-500">Total</p>
+          <p className="mt-1 text-2xl font-semibold text-[#2c5f5d]">{resumo.total}</p>
+        </div>
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 shadow-sm">
+          <p className="text-sm text-blue-700">Agendados</p>
+          <p className="mt-1 text-2xl font-semibold text-blue-700">{resumo.agendados}</p>
+        </div>
+        <div className="rounded-lg border border-green-200 bg-green-50 p-4 shadow-sm">
+          <p className="text-sm text-green-700">Concluídos</p>
+          <p className="mt-1 text-2xl font-semibold text-green-700">{resumo.concluidos}</p>
+        </div>
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 shadow-sm">
+          <p className="text-sm text-red-700">Cancelados</p>
+          <p className="mt-1 text-2xl font-semibold text-red-700">{resumo.cancelados}</p>
+        </div>
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 shadow-sm">
+          <p className="text-sm text-amber-700">Valor previsto</p>
+          <p className="mt-1 text-xl font-semibold text-amber-700">{formatarMoeda(resumo.valorTotal)}</p>
+        </div>
+      </div>
+
+      <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex-1">
+            <label className="mb-1 block text-sm font-medium text-gray-700">Buscar</label>
+            <input
+              type="search"
+              value={termoBusca}
+              onChange={(e) => setTermoBusca(e.target.value)}
+              placeholder="Nome, contato, código, data ou serviço"
+              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
+            />
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Status</label>
+              <select
+                value={filtroStatus}
+                onChange={(e) => setFiltroStatus(e.target.value as "Todos" | Agendamento["status"])}
+                className="w-full border border-gray-300 rounded px-3 py-2 bg-white focus:outline-none focus:border-[#2c5f5d]"
+              >
+                <option value="Todos">Todos</option>
+                <option value="Agendado">Agendado</option>
+                <option value="Concluído">Concluído</option>
+                <option value="Cancelado">Cancelado</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Urgência</label>
+              <select
+                value={filtroUrgencia}
+                onChange={(e) => setFiltroUrgencia(e.target.value as "Todas" | Urgencia)}
+                className="w-full border border-gray-300 rounded px-3 py-2 bg-white focus:outline-none focus:border-[#2c5f5d]"
+              >
+                <option value="Todas">Todas</option>
+                {NIVEIS_URGENCIA.map((nivel) => (
+                  <option key={nivel} value={nivel}>{nivel}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Data</label>
+              <input
+                type="date"
+                value={filtroData}
+                onChange={(e) => setFiltroData(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-gray-600">
+            Exibindo {agendamentosFiltrados.length} de {lista.length} agendamentos.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setTermoBusca("");
+              setFiltroStatus("Todos");
+              setFiltroUrgencia("Todas");
+              setFiltroData("");
+            }}
+            className="text-sm font-medium text-[#2c5f5d] hover:underline"
+          >
+            Limpar filtros
+          </button>
+        </div>
+      </div>
+
       <div className="bg-white border border-gray-300 rounded-lg shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-[#eaf4f4] text-[#2c5f5d]">
@@ -261,6 +427,7 @@ function AgendamentosPage() {
               <th className="text-left px-4 py-2">Cliente</th>
               <th className="text-left px-4 py-2">Animal</th>
               <th className="text-left px-4 py-2">Serviço</th>
+              <th className="text-left px-4 py-2">Sintomas</th>
               <th className="text-right px-4 py-2">Valor do Serviço</th>
               <th className="text-left px-4 py-2">Urgência</th>
               <th className="text-left px-4 py-2">Status</th>
@@ -268,20 +435,23 @@ function AgendamentosPage() {
             </tr>
           </thead>
           <tbody>
-            {lista.length === 0 && (
+            {agendamentosFiltrados.length === 0 && (
               <tr>
-                <td colSpan={8} className="text-center text-gray-500 py-6">
-                  Nenhum agendamento cadastrado.
+                <td colSpan={10} className="text-center text-gray-500 py-6">
+                  Nenhum agendamento atende aos filtros aplicados.
                 </td>
               </tr>
             )}
-            {lista.map((a) => (
+            {agendamentosFiltrados.map((a) => (
               <tr key={a.id} className="border-t border-gray-200">
                 <td className="px-4 py-2">{a.data.split("-").reverse().join("/")}</td>
                 <td className="px-4 py-2">{a.hora}</td>
                 <td className="px-4 py-2">{a.cliente}</td>
                 <td className="px-4 py-2">{a.animal}</td>
                 <td className="px-4 py-2">{a.servico}</td>
+                <td className="px-4 py-2 max-w-[220px] whitespace-pre-wrap break-words text-gray-700">
+                  {a.sintomas || "—"}
+                </td>
                 <td className="px-4 py-2 text-right font-medium text-[#2c5f5d]">
                   {formatarMoeda(calcularValorServico(a.servico, a.hora))}
                 </td>
