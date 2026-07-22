@@ -18,9 +18,9 @@ export type Cliente = {
   criadoEm: string;
 };
 
-const KEY = "patas-e-pelos:cadastros";
+const STORAGE_KEY = "patas-e-pelos:cadastros";
 
-const defaultClientes: Omit<Cliente, "id" | "criadoEm">[] = [
+const clientesIniciais: Omit<Cliente, "id" | "criadoEm">[] = [
   {
     nome: "Maria Silva",
     cpf: "123.456.789-00",
@@ -74,57 +74,60 @@ const defaultClientes: Omit<Cliente, "id" | "criadoEm">[] = [
   },
 ];
 
-function getId(): string {
+function gerarId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
   }
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function createDefaultClientes(): Cliente[] {
+function criarClientesIniciais(): Cliente[] {
   const timestamp = new Date().toISOString();
-  return defaultClientes.map((cliente) => ({
+  return clientesIniciais.map((cliente) => ({
     ...cliente,
-    id: getId(),
+    id: gerarId(),
     criadoEm: timestamp,
   }));
 }
 
-export function listarClientes(): Cliente[] {
+export function listarCadastros(): Cliente[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = window.localStorage.getItem(KEY);
+    const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw || !raw.trim()) {
-      const defaults = createDefaultClientes();
-      window.localStorage.setItem(KEY, JSON.stringify(defaults));
+      const defaults = criarClientesIniciais();
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults));
       return defaults;
     }
 
     const parsed = JSON.parse(raw) as Cliente[] | null;
     if (!parsed || parsed.length === 0) {
-      const defaults = createDefaultClientes();
-      window.localStorage.setItem(KEY, JSON.stringify(defaults));
+      const defaults = criarClientesIniciais();
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults));
       return defaults;
     }
 
     return parsed;
   } catch {
-    const defaults = createDefaultClientes();
-    window.localStorage.setItem(KEY, JSON.stringify(defaults));
+    const defaults = criarClientesIniciais();
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults));
     return defaults;
   }
 }
 
-export function salvarCliente(novo: Omit<Cliente, "id" | "criadoEm" | "animais"> & { animal: Animal }) {
-  const atuais = listarClientes();
-  const existente = atuais.find(
-    (c) => c.cpf.trim() && c.cpf.trim() === novo.cpf.trim(),
-  );
+export function listarClientes(): Cliente[] {
+  return listarCadastros();
+}
+
+export function salvarCadastro(novo: Omit<Cliente, "id" | "criadoEm" | "animais"> & { animal: Animal }) {
+  const atuais = listarCadastros();
+  const existente = atuais.find((c) => c.cpf.trim() && c.cpf.trim() === novo.cpf.trim());
+
   if (existente) {
     existente.animais.push(novo.animal);
   } else {
     atuais.push({
-      id: getId(),
+      id: gerarId(),
       nome: novo.nome,
       cpf: novo.cpf,
       telefone: novo.telefone,
@@ -134,37 +137,54 @@ export function salvarCliente(novo: Omit<Cliente, "id" | "criadoEm" | "animais">
       criadoEm: new Date().toISOString(),
     });
   }
-  window.localStorage.setItem(KEY, JSON.stringify(atuais));
+
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(atuais));
+}
+
+export function excluirCadastroCliente(id: string) {
+  const atuais = listarCadastros().filter((c) => c.id !== id);
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(atuais));
 }
 
 export function excluirCliente(id: string) {
-  const atuais = listarClientes().filter((c) => c.id !== id);
-  window.localStorage.setItem(KEY, JSON.stringify(atuais));
+  excluirCadastroCliente(id);
 }
 
-export function excluirAnimal(clienteId: string, index: number) {
-  const atuais = listarClientes();
+export function excluirAnimalDoCliente(clienteId: string, index: number) {
+  const atuais = listarCadastros();
   const cliente = atuais.find((c) => c.id === clienteId);
   if (!cliente) return;
   cliente.animais.splice(index, 1);
-  window.localStorage.setItem(KEY, JSON.stringify(atuais));
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(atuais));
 }
 
-export function atualizarCliente(
+export function excluirAnimal(clienteId: string, index: number) {
+  excluirAnimalDoCliente(clienteId, index);
+}
+
+export function atualizarCadastroCliente(
   id: string,
   dados: Partial<Omit<Cliente, "id" | "criadoEm" | "animais">>,
 ) {
-  const atuais = listarClientes();
+  const atuais = listarCadastros();
   const cliente = atuais.find((c) => c.id === id);
   if (!cliente) return;
   Object.assign(cliente, dados);
-  window.localStorage.setItem(KEY, JSON.stringify(atuais));
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(atuais));
 }
 
-export function atualizarAnimal(clienteId: string, index: number, dados: Animal) {
-  const atuais = listarClientes();
+export function atualizarCliente(id: string, dados: Partial<Omit<Cliente, "id" | "criadoEm" | "animais">>) {
+  atualizarCadastroCliente(id, dados);
+}
+
+export function atualizarAnimalDoCliente(clienteId: string, index: number, dados: Animal) {
+  const atuais = listarCadastros();
   const cliente = atuais.find((c) => c.id === clienteId);
   if (!cliente || !cliente.animais[index]) return;
   cliente.animais[index] = dados;
-  window.localStorage.setItem(KEY, JSON.stringify(atuais));
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(atuais));
+}
+
+export function atualizarAnimal(clienteId: string, index: number, dados: Animal) {
+  atualizarAnimalDoCliente(clienteId, index, dados);
 }

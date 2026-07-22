@@ -4,36 +4,34 @@ export const Route = createFileRoute("/painel")({
   component: PainelLayout,
 });
 
-const menu = [
+const itensMenu = [
   { label: "Início", path: "/painel", icon: "🏠" },
-  { label: "Cadastrar novo Cliente", path: "/painel/cadastro", icon: "🐾" },
+  { label: "Cadastrar cliente", path: "/painel/cadastro", icon: "🐾" },
   { label: "Agendamentos", path: "/painel/agendamentos", icon: "📅" },
   { label: "Cadastros", path: "/painel/cadastros", icon: "👥" },
 ];
 
 function PainelLayout() {
   const navigate = useNavigate();
-  const path = useRouterState({ select: (r) => r.location.pathname });
+  const pathAtual = useRouterState({ select: (rota) => rota.location.pathname });
 
   return (
     <div className="min-h-screen flex bg-[#eaf4f4]">
       <aside className="w-60 bg-[#2c5f5d] text-white flex flex-col">
         <div className="p-4 border-b border-white/20">
           <div className="text-xl font-bold">🐾 Patas e Pelos</div>
-          <div className="text-xs text-white/70">Painel do Atendente</div>
+          <div className="text-xs text-white/70">Painel do atendente</div>
         </div>
 
         <nav className="flex-1 p-2 space-y-1">
-          {menu.map((item) => {
-            const active = path === item.path;
+          {itensMenu.map((item) => {
+            const ativo = pathAtual === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
                 className={`block px-3 py-2 rounded text-sm transition-colors ${
-                  active
-                    ? "bg-white text-[#2c5f5d] font-medium"
-                    : "hover:bg-white/10 text-white"
+                  ativo ? "bg-white text-[#2c5f5d] font-medium" : "hover:bg-white/10 text-white"
                 }`}
               >
                 <span className="mr-2">{item.icon}</span>

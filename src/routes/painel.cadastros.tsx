@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  listarClientes,
-  excluirCliente,
-  excluirAnimal,
-  atualizarCliente,
-  atualizarAnimal,
+  listarCadastros,
+  excluirCadastroCliente,
+  excluirAnimalDoCliente,
+  atualizarCadastroCliente,
+  atualizarAnimalDoCliente,
   type Cliente,
   type Animal,
 } from "@/lib/cadastros-store";
@@ -15,80 +15,100 @@ export const Route = createFileRoute("/painel/cadastros")({
   component: CadastrosPage,
 });
 
-const especieLabel: Record<string, string> = {
-  cao: "Cão", gato: "Gato", ave: "Ave", roedor: "Roedor", outro: "Outro",
+const rotuloEspecie: Record<string, string> = {
+  cao: "Cão",
+  gato: "Gato",
+  ave: "Ave",
+  roedor: "Roedor",
+  outro: "Outro",
 };
+
+const camposClienteEdicao = [
+  { key: "nome", label: "Nome" },
+  { key: "cpf", label: "CPF" },
+  { key: "telefone", label: "Telefone" },
+  { key: "email", label: "Email" },
+  { key: "endereco", label: "Endereço" },
+] as const;
 
 function CadastrosPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [busca, setBusca] = useState("");
-  const [selecionadoId, setSelecionadoId] = useState<string | null>(null);
-  const [editandoCliente, setEditandoCliente] = useState<Cliente | null>(null);
-  const [editandoAnimal, setEditandoAnimal] = useState<
+  const [textoBusca, setTextoBusca] = useState("");
+  const [clienteSelecionadoId, setClienteSelecionadoId] = useState<string | null>(null);
+  const [clienteEmEdicao, setClienteEmEdicao] = useState<Cliente | null>(null);
+  const [animalEmEdicao, setAnimalEmEdicao] = useState<
     { clienteId: string; index: number; animal: Animal } | null
   >(null);
 
   useEffect(() => {
-    setClientes(listarClientes());
+    setClientes(listarCadastros());
   }, []);
 
-  const filtrados = clientes.filter((c) => {
-    const q = busca.trim().toLowerCase();
-    if (!q) return true;
+  const clientesFiltrados = clientes.filter((cliente) => {
+    const termoBusca = textoBusca.trim().toLowerCase();
+    if (!termoBusca) return true;
     return (
-      c.nome.toLowerCase().includes(q) ||
-      c.cpf.toLowerCase().includes(q) ||
-      c.telefone.toLowerCase().includes(q)
+      cliente.nome.toLowerCase().includes(termoBusca) ||
+      cliente.cpf.toLowerCase().includes(termoBusca) ||
+      cliente.telefone.toLowerCase().includes(termoBusca)
     );
   });
 
-  const selecionado = filtrados.find((c) => c.id === selecionadoId) ?? filtrados[0] ?? null;
+  const clienteSelecionado =
+    clientesFiltrados.find((cliente) => cliente.id === clienteSelecionadoId) ?? clientesFiltrados[0] ?? null;
 
-  function handleExcluirCliente(c: Cliente) {
-    const ok = window.confirm(
-      `Tem certeza que deseja excluir o cliente "${c.nome}" e seus ${c.animais.length} animal(is) afiliado(s)?\n\nEsta ação não pode ser desfeita.`,
+  function handleExcluirCliente(cliente: Cliente) {
+    const confirmado = window.confirm(
+      `Tem certeza que deseja excluir o cliente "${cliente.nome}" e seus ${cliente.animais.length} animal(is) afiliado(s)?\n\nEsta ação não pode ser desfeita.`,
     );
-    if (!ok) return;
-    excluirCliente(c.id);
-    setClientes(listarClientes());
-    if (selecionadoId === c.id) setSelecionadoId(null);
+    if (!confirmado) return;
+
+    excluirCadastroCliente(cliente.id);
+    setClientes(listarCadastros());
+    if (clienteSelecionadoId === cliente.id) setClienteSelecionadoId(null);
   }
 
   function handleExcluirAnimal(clienteId: string, index: number, nomeAnimal: string) {
-    const ok = window.confirm(
+    const confirmado = window.confirm(
       `Remover o animal "${nomeAnimal}" deste cliente?\n\nEssa ação exclui o registro do animal da ficha.`,
     );
-    if (!ok) return;
-    excluirAnimal(clienteId, index);
-    setClientes(listarClientes());
+    if (!confirmado) return;
+
+    excluirAnimalDoCliente(clienteId, index);
+    setClientes(listarCadastros());
   }
 
-  function salvarEdicaoCliente() {
-    if (!editandoCliente) return;
+  function salvarClienteEditado() {
+    if (!clienteEmEdicao) return;
+
     const confirmado = window.confirm(
-      `Deseja salvar as alterações feitas no cadastro de "${editandoCliente.nome}"?`,
+      `Deseja salvar as alterações feitas no cadastro de "${clienteEmEdicao.nome}"?`,
     );
     if (!confirmado) return;
-    atualizarCliente(editandoCliente.id, {
-      nome: editandoCliente.nome,
-      cpf: editandoCliente.cpf,
-      telefone: editandoCliente.telefone,
-      email: editandoCliente.email,
-      endereco: editandoCliente.endereco,
+
+    atualizarCadastroCliente(clienteEmEdicao.id, {
+      nome: clienteEmEdicao.nome,
+      cpf: clienteEmEdicao.cpf,
+      telefone: clienteEmEdicao.telefone,
+      email: clienteEmEdicao.email,
+      endereco: clienteEmEdicao.endereco,
     });
-    setClientes(listarClientes());
-    setEditandoCliente(null);
+
+    setClientes(listarCadastros());
+    setClienteEmEdicao(null);
   }
 
-  function salvarEdicaoAnimal() {
-    if (!editandoAnimal) return;
+  function salvarAnimalEditado() {
+    if (!animalEmEdicao) return;
+
     const confirmado = window.confirm(
-      `Deseja salvar as alterações feitas no animal "${editandoAnimal.animal.nome}"?`,
+      `Deseja salvar as alterações feitas no animal "${animalEmEdicao.animal.nome}"?`,
     );
     if (!confirmado) return;
-    atualizarAnimal(editandoAnimal.clienteId, editandoAnimal.index, editandoAnimal.animal);
-    setClientes(listarClientes());
-    setEditandoAnimal(null);
+
+    atualizarAnimalDoCliente(animalEmEdicao.clienteId, animalEmEdicao.index, animalEmEdicao.animal);
+    setClientes(listarCadastros());
+    setAnimalEmEdicao(null);
   }
 
   return (
@@ -108,52 +128,54 @@ function CadastrosPage() {
             to="/painel/cadastro"
             className="inline-block px-4 py-2 bg-[#2c5f5d] text-white rounded font-medium hover:bg-[#234a48]"
           >
-            + Novo Cadastro
+            + Novo cadastro
           </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Lista de clientes */}
           <section className="bg-white border border-gray-300 rounded-lg shadow-sm overflow-hidden">
             <header className="bg-[#2c5f5d] text-white px-4 py-2 flex justify-between items-center">
-              <span className="font-semibold">Clientes ({filtrados.length})</span>
-              <Link to="/painel/cadastro" className="text-xs bg-white text-[#2c5f5d] px-2 py-1 rounded hover:bg-gray-100">
+              <span className="font-semibold">Clientes ({clientesFiltrados.length})</span>
+              <Link
+                to="/painel/cadastro"
+                className="text-xs bg-white text-[#2c5f5d] px-2 py-1 rounded hover:bg-gray-100"
+              >
                 + Novo
               </Link>
             </header>
             <div className="p-3 border-b border-gray-200">
               <input
                 type="text"
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
+                value={textoBusca}
+                onChange={(e) => setTextoBusca(e.target.value)}
                 placeholder="Buscar por nome, CPF ou telefone..."
                 className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#2c5f5d]"
               />
             </div>
             <ul className="divide-y divide-gray-200 max-h-[60vh] overflow-auto">
-              {filtrados.map((c) => {
-                const ativo = selecionado?.id === c.id;
+              {clientesFiltrados.map((cliente) => {
+                const ativo = clienteSelecionado?.id === cliente.id;
                 return (
-                  <li key={c.id}>
+                  <li key={cliente.id}>
                     <div
                       className={`flex items-stretch hover:bg-[#eaf4f4] transition-colors ${
                         ativo ? "bg-[#eaf4f4] border-l-4 border-[#2c5f5d]" : ""
                       }`}
                     >
                       <button
-                        onClick={() => setSelecionadoId(c.id)}
+                        onClick={() => setClienteSelecionadoId(cliente.id)}
                         className="flex-1 text-left px-4 py-3"
                       >
-                        <div className="font-medium text-gray-800">{c.nome}</div>
+                        <div className="font-medium text-gray-800">{cliente.nome}</div>
                         <div className="text-xs text-gray-600">
-                          CPF: {c.cpf} • {c.telefone}
+                          CPF: {cliente.cpf} • {cliente.telefone}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
-                          🐾 {c.animais.length} animal{c.animais.length !== 1 ? "is" : ""}
+                          🐾 {cliente.animais.length} animal{cliente.animais.length !== 1 ? "is" : ""}
                         </div>
                       </button>
                       <button
-                        onClick={() => handleExcluirCliente(c)}
+                        onClick={() => handleExcluirCliente(cliente)}
                         title="Excluir cliente"
                         className="px-3 text-red-600 hover:bg-red-50 text-sm"
                       >
@@ -163,31 +185,30 @@ function CadastrosPage() {
                   </li>
                 );
               })}
-              {filtrados.length === 0 && (
+              {clientesFiltrados.length === 0 && (
                 <li className="p-4 text-sm text-gray-500 text-center">Nenhum cliente encontrado.</li>
               )}
             </ul>
           </section>
 
-          {/* Detalhes + animais */}
           <section className="bg-white border border-gray-300 rounded-lg shadow-sm overflow-hidden">
             <header className="bg-[#2c5f5d] text-white px-4 py-2 font-semibold">
               Animais afiliados
             </header>
-            {selecionado ? (
+            {clienteSelecionado ? (
               <div className="p-4 space-y-4">
                 <div className="bg-[#eaf4f4] rounded p-3 text-sm">
                   <div className="flex justify-between items-start gap-2">
-                    <div className="font-semibold text-[#2c5f5d]">{selecionado.nome}</div>
+                    <div className="font-semibold text-[#2c5f5d]">{clienteSelecionado.nome}</div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => setEditandoCliente({ ...selecionado })}
+                        onClick={() => setClienteEmEdicao({ ...clienteSelecionado })}
                         className="text-xs px-2 py-1 border border-[#2c5f5d] text-[#2c5f5d] rounded hover:bg-[#eaf4f4]"
                       >
                         ✏ Editar
                       </button>
                       <button
-                        onClick={() => handleExcluirCliente(selecionado)}
+                        onClick={() => handleExcluirCliente(clienteSelecionado)}
                         className="text-xs px-2 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50"
                       >
                         🗑 Excluir
@@ -195,35 +216,35 @@ function CadastrosPage() {
                     </div>
                   </div>
                   <div className="text-gray-700 text-xs mt-1 space-y-0.5">
-                    <div>CPF: {selecionado.cpf}</div>
-                    <div>Telefone: {selecionado.telefone}</div>
-                    {selecionado.email && <div>Email: {selecionado.email}</div>}
-                    {selecionado.endereco && <div>Endereço: {selecionado.endereco}</div>}
+                    <div>CPF: {clienteSelecionado.cpf}</div>
+                    <div>Telefone: {clienteSelecionado.telefone}</div>
+                    {clienteSelecionado.email && <div>Email: {clienteSelecionado.email}</div>}
+                    {clienteSelecionado.endereco && <div>Endereço: {clienteSelecionado.endereco}</div>}
                   </div>
                 </div>
 
                 <div>
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">
-                    Animais ({selecionado.animais.length})
+                    Animais ({clienteSelecionado.animais.length})
                   </h3>
                   <ul className="space-y-2">
-                    {selecionado.animais.map((a, i) => (
+                    {clienteSelecionado.animais.map((animal, index) => (
                       <li
-                        key={i}
+                        key={`${clienteSelecionado.id}-${index}`}
                         className="border border-gray-200 rounded p-3 hover:border-[#2c5f5d] transition-colors"
                       >
                         <div className="flex justify-between items-start">
-                          <div className="font-medium text-gray-800">🐾 {a.nome}</div>
+                          <div className="font-medium text-gray-800">🐾 {animal.nome}</div>
                           <div className="flex items-center gap-2">
                             <span className="text-xs bg-[#2c5f5d] text-white px-2 py-0.5 rounded">
-                              {especieLabel[a.especie] ?? a.especie}
+                              {rotuloEspecie[animal.especie] ?? animal.especie}
                             </span>
                             <button
                               onClick={() =>
-                                setEditandoAnimal({
-                                  clienteId: selecionado.id,
-                                  index: i,
-                                  animal: { ...a },
+                                setAnimalEmEdicao({
+                                  clienteId: clienteSelecionado.id,
+                                  index,
+                                  animal: { ...animal },
                                 })
                               }
                               title="Editar animal"
@@ -232,7 +253,7 @@ function CadastrosPage() {
                               ✏
                             </button>
                             <button
-                              onClick={() => handleExcluirAnimal(selecionado.id, i, a.nome)}
+                              onClick={() => handleExcluirAnimal(clienteSelecionado.id, index, animal.nome)}
                               title="Remover animal"
                               className="text-red-600 hover:bg-red-50 text-xs px-1 rounded"
                             >
@@ -241,15 +262,15 @@ function CadastrosPage() {
                           </div>
                         </div>
                         <div className="text-xs text-gray-600 mt-1 grid grid-cols-2 gap-x-2">
-                          {a.raca && <div>Raça: {a.raca}</div>}
-                          {a.idade && <div>Idade: {a.idade} ano(s)</div>}
-                          {a.sexo && (
-                            <div>Sexo: {a.sexo === "macho" ? "Macho" : "Fêmea"}</div>
+                          {animal.raca && <div>Raça: {animal.raca}</div>}
+                          {animal.idade && <div>Idade: {animal.idade} ano(s)</div>}
+                          {animal.sexo && (
+                            <div>Sexo: {animal.sexo === "macho" ? "Macho" : "Fêmea"}</div>
                           )}
                         </div>
-                        {a.observacoes && (
+                        {animal.observacoes && (
                           <div className="text-xs text-gray-600 mt-2 italic">
-                            Obs: {a.observacoes}
+                            Obs: {animal.observacoes}
                           </div>
                         )}
                       </li>
@@ -266,27 +287,21 @@ function CadastrosPage() {
         </div>
       )}
 
-      {editandoCliente && (
+      {clienteEmEdicao && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
             <header className="bg-[#2c5f5d] text-white px-4 py-2 rounded-t-lg font-semibold">
               Editar cliente
             </header>
             <div className="p-4 space-y-3 text-sm">
-              {[
-                { key: "nome", label: "Nome" },
-                { key: "cpf", label: "CPF" },
-                { key: "telefone", label: "Telefone" },
-                { key: "email", label: "Email" },
-                { key: "endereco", label: "Endereço" },
-              ].map((f) => (
-                <div key={f.key}>
-                  <label className="block text-xs text-gray-600 mb-1">{f.label}</label>
+              {camposClienteEdicao.map((campo) => (
+                <div key={campo.key}>
+                  <label className="block text-xs text-gray-600 mb-1">{campo.label}</label>
                   <input
                     type="text"
-                    value={(editandoCliente as any)[f.key] ?? ""}
+                    value={(clienteEmEdicao as Record<string, string | undefined>)[campo.key] ?? ""}
                     onChange={(e) =>
-                      setEditandoCliente({ ...editandoCliente, [f.key]: e.target.value })
+                      setClienteEmEdicao({ ...clienteEmEdicao, [campo.key]: e.target.value })
                     }
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
                   />
@@ -295,13 +310,13 @@ function CadastrosPage() {
             </div>
             <footer className="flex justify-end gap-2 px-4 py-3 border-t border-gray-200">
               <button
-                onClick={() => setEditandoCliente(null)}
+                onClick={() => setClienteEmEdicao(null)}
                 className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
               >
                 Cancelar
               </button>
               <button
-                onClick={salvarEdicaoCliente}
+                onClick={salvarClienteEditado}
                 className="px-3 py-1.5 text-sm bg-[#2c5f5d] text-white rounded hover:bg-[#234a48]"
               >
                 Salvar
@@ -311,7 +326,7 @@ function CadastrosPage() {
         </div>
       )}
 
-      {editandoAnimal && (
+      {animalEmEdicao && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
             <header className="bg-[#2c5f5d] text-white px-4 py-2 rounded-t-lg font-semibold">
@@ -322,11 +337,11 @@ function CadastrosPage() {
                 <label className="block text-xs text-gray-600 mb-1">Nome</label>
                 <input
                   type="text"
-                  value={editandoAnimal.animal.nome}
+                  value={animalEmEdicao.animal.nome}
                   onChange={(e) =>
-                    setEditandoAnimal({
-                      ...editandoAnimal,
-                      animal: { ...editandoAnimal.animal, nome: e.target.value },
+                    setAnimalEmEdicao({
+                      ...animalEmEdicao,
+                      animal: { ...animalEmEdicao.animal, nome: e.target.value },
                     })
                   }
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
@@ -335,11 +350,11 @@ function CadastrosPage() {
               <div>
                 <label className="block text-xs text-gray-600 mb-1">Espécie</label>
                 <select
-                  value={editandoAnimal.animal.especie}
+                  value={animalEmEdicao.animal.especie}
                   onChange={(e) =>
-                    setEditandoAnimal({
-                      ...editandoAnimal,
-                      animal: { ...editandoAnimal.animal, especie: e.target.value },
+                    setAnimalEmEdicao({
+                      ...animalEmEdicao,
+                      animal: { ...animalEmEdicao.animal, especie: e.target.value },
                     })
                   }
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
@@ -356,11 +371,11 @@ function CadastrosPage() {
                   <label className="block text-xs text-gray-600 mb-1">Raça</label>
                   <input
                     type="text"
-                    value={editandoAnimal.animal.raca ?? ""}
+                    value={animalEmEdicao.animal.raca ?? ""}
                     onChange={(e) =>
-                      setEditandoAnimal({
-                        ...editandoAnimal,
-                        animal: { ...editandoAnimal.animal, raca: e.target.value },
+                      setAnimalEmEdicao({
+                        ...animalEmEdicao,
+                        animal: { ...animalEmEdicao.animal, raca: e.target.value },
                       })
                     }
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
@@ -370,11 +385,11 @@ function CadastrosPage() {
                   <label className="block text-xs text-gray-600 mb-1">Idade</label>
                   <input
                     type="text"
-                    value={editandoAnimal.animal.idade ?? ""}
+                    value={animalEmEdicao.animal.idade ?? ""}
                     onChange={(e) =>
-                      setEditandoAnimal({
-                        ...editandoAnimal,
-                        animal: { ...editandoAnimal.animal, idade: e.target.value },
+                      setAnimalEmEdicao({
+                        ...animalEmEdicao,
+                        animal: { ...animalEmEdicao.animal, idade: e.target.value },
                       })
                     }
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
@@ -384,11 +399,11 @@ function CadastrosPage() {
               <div>
                 <label className="block text-xs text-gray-600 mb-1">Sexo</label>
                 <select
-                  value={editandoAnimal.animal.sexo ?? ""}
+                  value={animalEmEdicao.animal.sexo ?? ""}
                   onChange={(e) =>
-                    setEditandoAnimal({
-                      ...editandoAnimal,
-                      animal: { ...editandoAnimal.animal, sexo: e.target.value },
+                    setAnimalEmEdicao({
+                      ...animalEmEdicao,
+                      animal: { ...animalEmEdicao.animal, sexo: e.target.value },
                     })
                   }
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#2c5f5d]"
@@ -401,11 +416,11 @@ function CadastrosPage() {
               <div>
                 <label className="block text-xs text-gray-600 mb-1">Observações</label>
                 <textarea
-                  value={editandoAnimal.animal.observacoes ?? ""}
+                  value={animalEmEdicao.animal.observacoes ?? ""}
                   onChange={(e) =>
-                    setEditandoAnimal({
-                      ...editandoAnimal,
-                      animal: { ...editandoAnimal.animal, observacoes: e.target.value },
+                    setAnimalEmEdicao({
+                      ...animalEmEdicao,
+                      animal: { ...animalEmEdicao.animal, observacoes: e.target.value },
                     })
                   }
                   rows={3}
@@ -415,13 +430,13 @@ function CadastrosPage() {
             </div>
             <footer className="flex justify-end gap-2 px-4 py-3 border-t border-gray-200">
               <button
-                onClick={() => setEditandoAnimal(null)}
+                onClick={() => setAnimalEmEdicao(null)}
                 className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
               >
                 Cancelar
               </button>
               <button
-                onClick={salvarEdicaoAnimal}
+                onClick={salvarAnimalEditado}
                 className="px-3 py-1.5 text-sm bg-[#2c5f5d] text-white rounded hover:bg-[#234a48]"
               >
                 Salvar
