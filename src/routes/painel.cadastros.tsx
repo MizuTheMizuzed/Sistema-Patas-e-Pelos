@@ -55,7 +55,9 @@ function CadastrosPage() {
   }
 
   function handleExcluirAnimal(clienteId: string, index: number, nomeAnimal: string) {
-    const ok = window.confirm(`Remover o animal "${nomeAnimal}" deste cliente?`);
+    const ok = window.confirm(
+      `Remover o animal "${nomeAnimal}" deste cliente?\n\nEssa ação exclui o registro do animal da ficha.`,
+    );
     if (!ok) return;
     excluirAnimal(clienteId, index);
     setClientes(listarClientes());
@@ -63,6 +65,10 @@ function CadastrosPage() {
 
   function salvarEdicaoCliente() {
     if (!editandoCliente) return;
+    const confirmado = window.confirm(
+      `Deseja salvar as alterações feitas no cadastro de "${editandoCliente.nome}"?`,
+    );
+    if (!confirmado) return;
     atualizarCliente(editandoCliente.id, {
       nome: editandoCliente.nome,
       cpf: editandoCliente.cpf,
@@ -76,6 +82,10 @@ function CadastrosPage() {
 
   function salvarEdicaoAnimal() {
     if (!editandoAnimal) return;
+    const confirmado = window.confirm(
+      `Deseja salvar as alterações feitas no animal "${editandoAnimal.animal.nome}"?`,
+    );
+    if (!confirmado) return;
     atualizarAnimal(editandoAnimal.clienteId, editandoAnimal.index, editandoAnimal.animal);
     setClientes(listarClientes());
     setEditandoAnimal(null);
@@ -87,6 +97,9 @@ function CadastrosPage() {
       <p className="text-sm text-gray-600 mb-4">
         Clientes cadastrados no sistema e seus respectivos animais.
       </p>
+      <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
+        Antes de salvar, editar ou excluir, revise as informações com atenção. O sistema solicitará confirmação para evitar alterações acidentais.
+      </div>
 
       {clientes.length === 0 ? (
         <div className="bg-white border border-gray-300 rounded-lg p-8 text-center">

@@ -31,6 +31,15 @@ function CadastroPage() {
       setMensagem("Por favor, preencha os campos obrigatórios (*).");
       return;
     }
+
+    const confirmado = window.confirm(
+      "Confirme a criação deste cadastro.\n\nRevise os dados do cliente e do animal antes de salvar.",
+    );
+    if (!confirmado) {
+      setMensagem("Cadastro cancelado.");
+      return;
+    }
+
     salvarCliente({
       nome, cpf, telefone, email, endereco,
       animal: { nome: nomeAnimal, especie, raca, idade, sexo, observacoes },
@@ -54,6 +63,9 @@ function CadastroPage() {
       <p className="text-xs text-gray-600 mb-4">
         Campos marcados com <span className="text-red-600 font-semibold">*</span> são <strong>obrigatórios</strong>. Os demais são <em>opcionais</em>.
       </p>
+      <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
+        Antes de salvar, confira todos os dados do tutor e do animal. A confirmação será solicitada antes de criar o cadastro.
+      </div>
 
       <form
         onSubmit={handleSubmit}
