@@ -9,21 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PainelRouteImport } from './routes/painel'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PainelRouteImport } from './routes/painel'
 import { Route as PainelIndexRouteImport } from './routes/painel.index'
-import { Route as PainelCadastrosRouteImport } from './routes/painel.cadastros'
-import { Route as PainelCadastroRouteImport } from './routes/painel.cadastro'
 import { Route as PainelAgendamentosRouteImport } from './routes/painel.agendamentos'
+import { Route as PainelCadastroRouteImport } from './routes/painel.cadastro'
+import { Route as PainelCadastrosRouteImport } from './routes/painel.cadastros'
 
-const PainelRoute = PainelRouteImport.update({
-  id: '/painel',
-  path: '/painel',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PainelRoute = PainelRouteImport.update({
+  id: '/painel',
+  path: '/painel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PainelIndexRoute = PainelIndexRouteImport.update({
@@ -31,9 +31,9 @@ const PainelIndexRoute = PainelIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PainelRoute,
 } as any)
-const PainelCadastrosRoute = PainelCadastrosRouteImport.update({
-  id: '/cadastros',
-  path: '/cadastros',
+const PainelAgendamentosRoute = PainelAgendamentosRouteImport.update({
+  id: '/agendamentos',
+  path: '/agendamentos',
   getParentRoute: () => PainelRoute,
 } as any)
 const PainelCadastroRoute = PainelCadastroRouteImport.update({
@@ -41,9 +41,9 @@ const PainelCadastroRoute = PainelCadastroRouteImport.update({
   path: '/cadastro',
   getParentRoute: () => PainelRoute,
 } as any)
-const PainelAgendamentosRoute = PainelAgendamentosRouteImport.update({
-  id: '/agendamentos',
-  path: '/agendamentos',
+const PainelCadastrosRoute = PainelCadastrosRouteImport.update({
+  id: '/cadastros',
+  path: '/cadastros',
   getParentRoute: () => PainelRoute,
 } as any)
 
@@ -104,18 +104,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/painel': {
-      id: '/painel'
-      path: '/painel'
-      fullPath: '/painel'
-      preLoaderRoute: typeof PainelRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/painel': {
+      id: '/painel'
+      path: '/painel'
+      fullPath: '/painel'
+      preLoaderRoute: typeof PainelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/painel/': {
@@ -125,11 +125,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PainelIndexRouteImport
       parentRoute: typeof PainelRoute
     }
-    '/painel/cadastros': {
-      id: '/painel/cadastros'
-      path: '/cadastros'
-      fullPath: '/painel/cadastros'
-      preLoaderRoute: typeof PainelCadastrosRouteImport
+    '/painel/agendamentos': {
+      id: '/painel/agendamentos'
+      path: '/agendamentos'
+      fullPath: '/painel/agendamentos'
+      preLoaderRoute: typeof PainelAgendamentosRouteImport
       parentRoute: typeof PainelRoute
     }
     '/painel/cadastro': {
@@ -139,11 +139,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PainelCadastroRouteImport
       parentRoute: typeof PainelRoute
     }
-    '/painel/agendamentos': {
-      id: '/painel/agendamentos'
-      path: '/agendamentos'
-      fullPath: '/painel/agendamentos'
-      preLoaderRoute: typeof PainelAgendamentosRouteImport
+    '/painel/cadastros': {
+      id: '/painel/cadastros'
+      path: '/cadastros'
+      fullPath: '/painel/cadastros'
+      preLoaderRoute: typeof PainelCadastrosRouteImport
       parentRoute: typeof PainelRoute
     }
   }

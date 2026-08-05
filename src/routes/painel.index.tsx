@@ -89,16 +89,28 @@ function PainelHome() {
       </section>
 
       <section className="rounded-xl border border-dashed border-[#b9d9d6] bg-[#f7fbfb] p-4 text-sm text-gray-700 shadow-sm">
-        <div>
-          <p className="font-medium text-[#2c5f5d]">Precisa de ajuda?</p>
-          <p className="mt-1">
-            Entre em contato pelo e-mail <span className="font-semibold">teammizuzed@gmail.com</span> ou fale com o gerente.
-          </p>
-        </div>
-        <div className="mt-3 border-t border-[#dceeee] pt-3">
-          <p className="italic text-gray-600">
-            Lembre-se: Cada atendimento é uma oportunidade de fazer a diferença na vida de um animal e de sua família!
-          </p>
+        <div className="space-y-4">
+          <div>
+            <p className="font-medium text-[#2c5f5d]">FAQ</p>
+          </div>
+          <div>
+            <p className="font-semibold text-gray-900">O sistema informou que já existe um pré-agendamento igual. O que significa?</p>
+            <p className="mt-1 text-gray-700">
+              Já existe um registro para o mesmo tutor, pet e horário. Verifique os agendamentos existentes antes de criar outro.
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold text-gray-900">Por que aparece uma confirmação antes de salvar ou cancelar?</p>
+            <p className="mt-1 text-gray-700">
+              Essa confirmação evita alterações acidentais e garante que a operação será realizada apenas após a confirmação do usuário.
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold text-gray-900">O que fazer quando nenhum registro é encontrado?</p>
+            <p className="mt-1 text-gray-700">
+              Confira os dados digitados na pesquisa ou remova os filtros aplicados.
+            </p>
+          </div>
         </div>
       </section>
     </div>

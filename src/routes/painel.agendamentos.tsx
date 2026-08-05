@@ -88,6 +88,7 @@ const exemplos: Agendamento[] = [
   { id: 1, cliente: "Maria Silva", animal: "Rex", servico: "Consulta", data: "2026-06-26", hora: "09:00", urgencia: "Baixa", sintomas: "Muito apático e com febre", status: "Agendado" },
   { id: 2, cliente: "João Souza", animal: "Mia", servico: "Vacinação", data: "2026-06-26", hora: "10:30", urgencia: "Nenhuma", sintomas: "Sem sintomas aparentes", status: "Agendado" },
   { id: 3, cliente: "Ana Costa", animal: "Toby", servico: "Banho e Tosa", data: "2026-06-27", hora: "14:00", urgencia: "Nenhuma", sintomas: "", status: "Concluído" },
+  { id: 4, cliente: "Carlos Lima", animal: "Luna", servico: "Cirurgia", data: "2026-06-28", hora: "13:30", urgencia: "Crítica", sintomas: "Sangramento intenso e dor abdominal", status: "Agendado" },
 ];
 
 function AgendamentosPage() {
